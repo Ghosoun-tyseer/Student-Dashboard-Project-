@@ -18,7 +18,6 @@
             border: 1px solid var(--border-color);
         }
 
-        
         .modal-overlay {
             display: none;
             position: fixed;
@@ -65,7 +64,6 @@
             <button class="btn btn-primary" onclick="openModal()">+ Add New Course</button>
         </div>
 
-        <!-- قسم الفلترة -->
         <div class="filter-section mt-2">
             <span>Filter by Status:</span>
             <select id="statusFilter" onchange="renderCourses()" style="width: auto; padding: 5px 15px;">
@@ -76,7 +74,6 @@
             </select>
         </div>
 
-        <!-- جدول الكورسات -->
         <div class="table-container">
             <table id="coursesTable">
                 <thead>
@@ -91,13 +88,11 @@
                     </tr>
                 </thead>
                 <tbody id="coursesList">
-                    <!-- البيانات ستظهر هنا بواسطة JS -->
-                </tbody>
+                    </tbody>
             </table>
         </div>
     </main>
 
-    <!--  إضافة/تعديل كورس -->
     <div class="modal-overlay" id="courseModal">
         <div class="modal-content">
             <h2 id="modalTitle">Add New Course</h2>
@@ -161,6 +156,23 @@
 
         let userData = getUserData(user.email);
 
+        // وظيفة للتحقق من تداخل الوقت
+        function isTimeOverlapping(newStart, newEnd, currentIndex) {
+            for (let i = 0; i < userData.courses.length; i++) {
+                // إذا كنا في وضع التعديل، نتجاهل الكورس الحالي من المقارنة
+                if (i == currentIndex) continue;
+
+                const existingCourse = userData.courses[i];
+                
+                // مقارنة السلاسل النصية للوقت (HH:mm)
+                // القاعدة: (وقت البداية الجديد < وقت نهاية الكورس الموجود) و (وقت النهاية الجديد > وقت بداية الكورس الموجود)
+                if (newStart < existingCourse.end && newEnd > existingCourse.start) {
+                    return existingCourse.name; // نرجع اسم الكورس المتداخل معه
+                }
+            }
+            return null;
+        }
+
         // 2. وظائف الـ Modal
         function openModal(editIndex = -1) {
             const modal = document.getElementById('courseModal');
@@ -168,7 +180,6 @@
             modal.style.display = 'flex';
             
             if (editIndex > -1) {
-                // التعديل
                 document.getElementById('modalTitle').innerText = "Edit Course";
                 const c = userData.courses[editIndex];
                 document.getElementById('editIndex').value = editIndex;
@@ -180,7 +191,6 @@
                 document.getElementById('classroom').value = c.classroom;
                 document.getElementById('courseStatus').value = c.status;
             } else {
-                // الإضافة
                 document.getElementById('modalTitle').innerText = "Add New Course";
                 form.reset();
                 document.getElementById('editIndex').value = -1;
@@ -196,11 +206,25 @@
             e.preventDefault();
             const idx = document.getElementById('editIndex').value;
             
+            const start = document.getElementById('startTime').value;
+            const end = document.getElementById('endTime').value;
+
+            // أ. التأكد أن وقت النهاية بعد وقت البداية
+            if (start >= end) {
+                return alert("Error: End time must be after start time.");
+            }
+
+            // ب. التحقق من تداخل الوقت مع كورسات أخرى
+            const overlappingCourseName = isTimeOverlapping(start, end, idx);
+            if (overlappingCourseName) {
+                return alert(`Time Collision! This time overlaps with your course: "${overlappingCourseName}". Please choose a different time.`);
+            }
+            
             const courseObj = {
                 name: document.getElementById('courseName').value,
                 credits: document.getElementById('creditHours').value,
-                start: document.getElementById('startTime').value,
-                end: document.getElementById('endTime').value,
+                start: start,
+                end: end,
                 instructor: document.getElementById('instructor').value,
                 classroom: document.getElementById('classroom').value,
                 status: document.getElementById('courseStatus').value
@@ -233,7 +257,6 @@
             tbody.innerHTML = '';
 
             userData.courses.forEach((course, index) => {
-                // الفلترة
                 if (filterValue !== "All" && course.status !== filterValue) return;
 
                 const tr = document.createElement('tr');
@@ -257,10 +280,8 @@
             }
         }
 
-        // التشغيل عند التحميل
         renderCourses();
     </script>
     <script src="script.js"></script>
-    
 </body>
 </html>
