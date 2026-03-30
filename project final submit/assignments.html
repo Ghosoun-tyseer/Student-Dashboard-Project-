@@ -125,6 +125,9 @@
         function openModal(index = -1) {
             const modal = document.getElementById('assignmentModal');
             const form = document.getElementById('assignmentForm');
+
+        document.getElementById('assDeadline').min = new Date().toISOString().split("T")[0]; 
+
             populateCourseSelect(); // تحديث قائمة الكورسات
             
             modal.style.display = 'flex';
@@ -165,6 +168,16 @@
         // 3. حفظ الواجب (إضافة أو تعديل)
         document.getElementById('assignmentForm').addEventListener('submit', (e) => {
             e.preventDefault();
+
+            const deadlineInput = document.getElementById('assDeadline').value;
+           const selectedDate = new Date(deadlineInput);
+           const today = new Date();
+
+            today.setHours(0, 0, 0, 0);
+            if (selectedDate < today) {
+        return alert("Error: Deadline cannot be in the past!");
+    }
+    
             const idx = document.getElementById('editIndex').value;
             
             const assObj = {
