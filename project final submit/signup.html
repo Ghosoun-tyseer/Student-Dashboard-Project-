@@ -11,8 +11,8 @@
             <h2>Create Account</h2>
             <form id="signupForm">
                 <div class="form-group"><label>Full Name</label><input type="text" id="name" required></div>
-                <div class="form-group"><label>Email</label><input type="email" id="email" required></div>
-                <div class="form-group"><label>Password</label><input type="password" id="password" required minlength="6"></div>
+                <div class="form-group"><label>Email</label><input type="text" id="email" required></div>
+                <div class="form-group"><label>Password</label><input type="password" id="password" ></div>
                 <div class="form-group"><label>Confirm Password</label><input type="password" id="confirmPassword" required></div>
                 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
@@ -34,12 +34,26 @@
             const pass = document.getElementById('password').value;
             const confirm = document.getElementById('confirmPassword').value;
 
+            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])[a-zA-Z0-9_$]{8,}$/;
+ 
             if (pass !== confirm) return alert("Passwords do not match!");
+
+            if (!passwordRegex.test(pass)) {
+            return alert("Password must be at least 8 characters, include at least one uppercase, one lowercase, ( and symbols (_ $) optional)");
+              }
 
             const users = JSON.parse(localStorage.getItem('users') || '[]');
             const email = document.getElementById('email').value;
 
-            if (users.find(u => u.email === email)) return alert("Email already exists!");
+           if (users.find(u => u.email === email)) return alert("Email already exists!");
+
+            const emailRegex =/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.com$/;
+
+            if (!emailRegex.test(email)) {
+            return alert("Email must be in the format: user@emailprovider.com");
+              }
+
+            
 
             const newUser = {
                 name: document.getElementById('name').value,
